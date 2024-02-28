@@ -28,7 +28,7 @@ PowerShell version should be 7+. Also make sure your Azure CLI installation is u
 this script in a Python environment that has the packages from requirments.txt installed.
 #>
 param(
-  [Parameter(mandatory=$true)]
+  [Parameter(mandatory = $true)]
   [string] $ConfigFile
 )
 
@@ -36,7 +36,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if(-Not (Test-Path $ConfigFile)) {
+if (-Not (Test-Path $ConfigFile)) {
   throw "The given config file does not exist. Ensure that you pass a valid path to a valid config file."
 }
 
@@ -87,22 +87,22 @@ az group create --name $RESOURCE_GROUP --location $REGION
 Write-Host "Creating user-assigned managed identity..." -ForegroundColor Blue
 az identity create --name $USER_MANAGED_IDENTITY_NAME --resource-group $RESOURCE_GROUP
 $USER_MANAGED_IDENTITY_ID = (az identity show `
-  --name $USER_MANAGED_IDENTITY_NAME `
-  --resource-group $RESOURCE_GROUP `
-  --query id `
-  -o tsv
+    --name $USER_MANAGED_IDENTITY_NAME `
+    --resource-group $RESOURCE_GROUP `
+    --query id `
+    -o tsv
 )
 $USER_MANAGED_IDENTITY_PRINCIPAL_ID = (az identity show `
-  --name $USER_MANAGED_IDENTITY_NAME `
-  --resource-group $RESOURCE_GROUP `
-  --query principalId `
-  -o tsv
+    --name $USER_MANAGED_IDENTITY_NAME `
+    --resource-group $RESOURCE_GROUP `
+    --query principalId `
+    -o tsv
 )
 $USER_MANAGED_IDENTITY_CLIENT_ID = (az identity show `
-  --name $USER_MANAGED_IDENTITY_NAME `
-  --resource-group $RESOURCE_GROUP `
-  --query clientId `
-  -o tsv
+    --name $USER_MANAGED_IDENTITY_NAME `
+    --resource-group $RESOURCE_GROUP `
+    --query clientId `
+    -o tsv
 )
 
 # create key vault (deleting/purging if pre-exists)
@@ -129,10 +129,10 @@ Write-Host "Waiting for Key Vault creation to complete..." -ForegroundColor Blue
 az keyvault wait --name $KEY_VAULT_NAME --created
 Write-Host "Getting Key Vault URI..." -ForegroundColor Blue
 $KEY_VAULT_URI = (az keyvault show `
-  --name $KEY_VAULT_NAME `
-  --resource-group $RESOURCE_GROUP `
-  --query properties.vaultUri `
-  -o tsv
+    --name $KEY_VAULT_NAME `
+    --resource-group $RESOURCE_GROUP `
+    --query properties.vaultUri `
+    -o tsv
 )
 Write-Host "Assigning permissions to managed identity..." -ForegroundColor Blue
 az keyvault set-policy `
@@ -149,16 +149,16 @@ az redis create `
   --sku Standard `
   --vm-size c0
 $REDIS_HOST = $(az redis show `
-  --name $REDIS_CACHE_NAME `
-  -g $RESOURCE_GROUP `
-  --query hostName `
-  -o tsv
+    --name $REDIS_CACHE_NAME `
+    -g $RESOURCE_GROUP `
+    --query hostName `
+    -o tsv
 )
 $REDIS_PASSWORD = $(az redis list-keys `
-  --name $REDIS_CACHE_NAME `
-  -g $RESOURCE_GROUP `
-  --query primaryKey `
-  -o tsv `
+    --name $REDIS_CACHE_NAME `
+    -g $RESOURCE_GROUP `
+    --query primaryKey `
+    -o tsv `
 )
 
 # create container registry
@@ -182,21 +182,21 @@ az monitor log-analytics workspace create `
   --resource-group $RESOURCE_GROUP `
   --workspace-name $LOG_ANALYTICS_WORKSPACE_NAME
 $LOG_ANALYTICS_WORKSPACE_ID = ( `
-  az monitor log-analytics workspace show `
+    az monitor log-analytics workspace show `
     --name $LOG_ANALYTICS_WORKSPACE_NAME `
     --resource-group $RESOURCE_GROUP `
     --query id `
     -o tsv `
 )
 $LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID = ( `
-  az monitor log-analytics workspace show `
+    az monitor log-analytics workspace show `
     --name $LOG_ANALYTICS_WORKSPACE_NAME `
     --resource-group $RESOURCE_GROUP `
     --query customerId `
     -o tsv `
 )
 $LOG_ANALYTICS_WORKSPACE_KEY = ( `
-  az monitor log-analytics workspace get-shared-keys `
+    az monitor log-analytics workspace get-shared-keys `
     --resource-group $RESOURCE_GROUP `
     --workspace-name $LOG_ANALYTICS_WORKSPACE_NAME `
     --query primarySharedKey `
@@ -212,48 +212,56 @@ az monitor log-analytics workspace table create `
   --name "AzureOpenAIUsage_PP_CL" `
   --retention-time $LOG_ANALYTICS_AOAIUSAGE_TABLE_RETENTION_TIME `
   --columns `
-    TimeGenerated=datetime `
-    RequestReceivedUtc=string `
-    Client=string `
-    IsStreaming=boolean `
-    PromptTokens=int `
-    CompletionTokens=int `
-    TotalTokens=int `
-    AoaiRoundtripTimeMS=int `
-    AoaiRegion=string `
-    AoaiEndpointName=string
+  TimeGenerated=datetime `
+  RequestReceivedUtc=string `
+  Client=string `
+  IsStreaming=boolean `
+  PromptTokens=int `
+  CompletionTokens=int `
+  TotalTokens=int `
+  AoaiRoundtripTimeMS=int `
+  AoaiRegion=string `
+  AoaiEndpointName=string
 # data collection endpoint
 Write-Host "Creating data collection endpoint..." -ForegroundColor Blue
-$DATA_COLLECTION_ENDPOINT_ID = (az monitor data-collection endpoint create `
-  --name $DATA_COLLECTION_ENDPOINT_NAME `
-  --resource-group $RESOURCE_GROUP `
-  --location $REGION `
-  --public-network-access "enabled" `
-  --query immutableId `
-  --output tsv `
+$DATA_COLLECTION_ENDPOINT_IMMUTABLE_ID = (az monitor data-collection endpoint create `
+    --name $DATA_COLLECTION_ENDPOINT_NAME `
+    --resource-group $RESOURCE_GROUP `
+    --location $REGION `
+    --public-network-access "enabled" `
+    --query immutableId `
+    --output tsv `
 )
 $LOGS_INGESTION_ENDPOINT = (az monitor data-collection endpoint show `
-  --name $DATA_COLLECTION_ENDPOINT_NAME `
-  --resource-group $RESOURCE_GROUP `
-  --query logsIngestion.endpoint `
-  --output tsv `
+    --name $DATA_COLLECTION_ENDPOINT_NAME `
+    --resource-group $RESOURCE_GROUP `
+    --query logsIngestion.endpoint `
+    --output tsv `
 )
+$DATA_COLLECTION_ENDPOINT_ID = (az monitor data-collection endpoint show `
+    --name $DATA_COLLECTION_ENDPOINT_NAME `
+    --resource-group $RESOURCE_GROUP `
+    --query id `
+    --output tsv `
+)
+
 # data collection rule
 Write-Host "Creating data collection rule..." -ForegroundColor Blue
 $rule_file_path = "rule-file.json"
 Try {
   Copy-Item -Path "rule-file.template.json" -Destination $rule_file_path
   ((Get-Content $rule_file_path) -replace "##workspaceResourceId##", $LOG_ANALYTICS_WORKSPACE_ID) `
-    | Set-Content -Path $rule_file_path
+  | Set-Content -Path $rule_file_path
   ((Get-Content $rule_file_path) -replace "##dataCollectionEndpointId##", `
-      $DATA_COLLECTION_ENDPOINT_ID) | Set-Content -Path $rule_file_path
+    $DATA_COLLECTION_ENDPOINT_IMMUTABLE_ID) | Set-Content -Path $rule_file_path
   $DCR_IMMUTABLE_ID = (az monitor data-collection rule create `
-    --name "AzureOpenAIUsage_PP_CL" `
-    --resource-group $RESOURCE_GROUP `
-    --location $REGION `
-    --rule-file $rule_file_path `
-    --query immutableId `
-    --output tsv
+      --name "AzureOpenAIUsage_PP_CL" `
+      --resource-group $RESOURCE_GROUP `
+      --location $REGION `
+      --rule-file $rule_file_path `
+      --query immutableId `
+      --data-collection-endpoint-id $DATA_COLLECTION_ENDPOINT_ID `
+      --output tsv
   )
 }
 Finally {
@@ -264,10 +272,10 @@ Finally {
 # assign Monitoring Metrics Publisher role at data collection rule to user-managed identity
 Write-Host "Assigning managed identity Monitoring Metrics Publisher role..." -ForegroundColor Blue
 $DCR_ID = (az monitor data-collection rule show `
-  --name "AzureOpenAIUsage_PP_CL" `
-  --resource-group $RESOURCE_GROUP `
-  --query id `
-  --output tsv
+    --name "AzureOpenAIUsage_PP_CL" `
+    --resource-group $RESOURCE_GROUP `
+    --query id `
+    --output tsv
 )
 az role assignment create `
   --assignee-object-id $USER_MANAGED_IDENTITY_PRINCIPAL_ID `
@@ -283,24 +291,24 @@ Try {
   $new_yaml_config_string = $CONFIG_YAML_STRING
   # user_assigned_managed_identity_client_id
   $new_yaml_config_string = ($new_yaml_config_string `
-    -replace "(?m)(?<=^\s*user_assigned_managed_identity_client_id\s*:\s+).*$", `
-    $USER_MANAGED_IDENTITY_CLIENT_ID)
+      -replace "(?m)(?<=^\s*user_assigned_managed_identity_client_id\s*:\s+).*$", `
+      $USER_MANAGED_IDENTITY_CLIENT_ID)
   # log_ingestion_endpoint
   $new_yaml_config_string = ($new_yaml_config_string `
-    -replace "(?m)(?<=^\s*log_ingestion_endpoint\s*:\s+).*$", `
-    $LOGS_INGESTION_ENDPOINT)
+      -replace "(?m)(?<=^\s*log_ingestion_endpoint\s*:\s+).*$", `
+      $LOGS_INGESTION_ENDPOINT)
   # data_collection_rule_id
   $new_yaml_config_string = ($new_yaml_config_string `
-    -replace "(?m)(?<=^\s*data_collection_rule_id\s*:\s+).*$", `
-    $DCR_IMMUTABLE_ID)
+      -replace "(?m)(?<=^\s*data_collection_rule_id\s*:\s+).*$", `
+      $DCR_IMMUTABLE_ID)
   # redis_host
   $new_yaml_config_string = ($new_yaml_config_string `
-    -replace "(?m)(?<=^\s*redis_host\s*:\s+).*$", `
-    $REDIS_HOST)
+      -replace "(?m)(?<=^\s*redis_host\s*:\s+).*$", `
+      $REDIS_HOST)
   # redis_password
   $new_yaml_config_string = ($new_yaml_config_string `
-    -replace "(?m)(?<=^\s*redis_password\s*:\s+).*$", `
-    $REDIS_PASSWORD)
+      -replace "(?m)(?<=^\s*redis_password\s*:\s+).*$", `
+      $REDIS_PASSWORD)
 
   #-- write to file and set secret in Key Vault
   $new_yaml_config_string | Set-Content -Path $temp_config_yaml_path
@@ -363,7 +371,7 @@ az containerapp revision list `
   --name $CONTAINER_APP_NAME `
   --resource-group $RESOURCE_GROUP `
   --query "[?properties.active].name" -o tsv | ForEach-Object {
-az containerapp revision restart `
+  az containerapp revision restart `
     --name $CONTAINER_APP_NAME `
     --resource-group $RESOURCE_GROUP `
     --revision $_
